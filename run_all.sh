@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the source and target datasets
-datasets=("mnist" "fashion" "cifar10" "cifar100" "svhn")
+datasets=("svhn" "mnist" "fashion" "cifar10" "cifar100")
 
 # Loop over each source dataset
 for source in "${datasets[@]}"
