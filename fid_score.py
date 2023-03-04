@@ -208,21 +208,28 @@ def calculate_activation_statistics(dataset, model, batch_size=50, dims=2048,
     return mu, sigma
 
 
-def compute_statistics_of_dataset(dataset, model, batch_size, dims, device,
-                               num_workers=1):
-    
-    return calculate_activation_statistics(dataset, model, batch_size, dims, device, num_workers)
+def compute_statistics_of_dataset(dataset, model, batch_size, dims, device, path, num_workers=1):
+    m , s = 0, 0
+    if path.endswith('.npz'):
+        with np.load(path) as f:
+            m, s = f['mu'][:], f['sigma'][:]
+    else:
+            m, s = calculate_activation_statistics(dataset, model, batch_size, dims, device, num_workers)
+    return m , s
 
 
-def calculate_fid_given_datasets(datasets, batch_size, device, dims, num_workers=1):
+def calculate_fid_given_datasets(datasets, batch_size, device, dims, paths, num_workers=1):
     """Calculates the FID of two datasets"""
 
     block_idx = InceptionV3.BLOCK_INDEX_BY_DIM[dims]
 
     model = InceptionV3([block_idx]).to(device)
 
-    m1, s1 = compute_statistics_of_dataset(datasets[0], model, batch_size, dims, device, num_workers)
-    m2, s2 = compute_statistics_of_dataset(datasets[1], model, batch_size, dims, device, num_workers)
+    m1, s1 = compute_statistics_of_dataset(datasets[0], model, batch_size, dims, device, paths[0], num_workers)
+    np.savez_compressed(paths[0], mu=m1, sigma=s1)
+
+    m2, s2 = compute_statistics_of_dataset(datasets[1], model, batch_size, dims, device, paths[1], num_workers)
+    np.savez_compressed(paths[1], mu=m2, sigma=s2)
 
     fid_value = calculate_frechet_distance(m1, s1, m2, s2)
 
@@ -235,7 +242,7 @@ def main():
     logger_dir = os.path.join('./Scores/',  f'normal-{args.source_dataset}', f'normal-class-{args.source_class:02d}-{dataset_labels[args.source_dataset][args.source_class]}', f'exposure-{args.exposure_dataset}')
     experiment_name = f'FID-{args.source_dataset}-{args.source_class:02d}-{dataset_labels[args.source_dataset][args.source_class]}-{args.exposure_dataset}'
     logger = Logger(save_dir=logger_dir, exp_name=experiment_name, hparams=args)
-    
+
     if args.device is None:
         device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
     else:
@@ -256,10 +263,16 @@ def main():
 
     datasets = get_datasets(normal_dataset=args.source_dataset, normal_class_indx=args.source_class, exposure_dataset=args.exposure_dataset)
 
+    paths = [
+        os.path.join('./MU-STD/',  f'normal-{args.source_dataset}', f'normal-class-{args.source_class:02d}-{dataset_labels[args.source_dataset][args.source_class]}', f'ms.npz'),
+        os.path.join('./MU-STD/',  f'exposure-{args.exposure_dataset}', f'ms.npz'),   
+    ]
+
     fid_value = calculate_fid_given_datasets(datasets,
                                             args.batch_size,
                                             device,
                                             args.dims,
+                                            paths,
                                             num_workers)
     
     
