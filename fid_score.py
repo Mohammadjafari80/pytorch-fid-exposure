@@ -64,7 +64,7 @@ parser.add_argument('--dims', type=int, default=2048,
                           'By default, uses pool3 features'))
 
 parser.add_argument('--source_dataset', help='Target Dataset as one-class for normal',
-                    choices=['cifar10', 'cifar100', 'mnist', 'fashion', 'mvtec', 'med'], type=str)
+                    choices=['cifar10', 'cifar100', 'mnist', 'fashion', 'mvtec', 'svhn'], type=str)
 
 parser.add_argument('--source_class', help='Index of Normal Class',
                     default=None, type=int)
