@@ -210,11 +210,13 @@ def calculate_activation_statistics(dataset, model, batch_size=50, dims=2048,
 
 def compute_statistics_of_dataset(dataset, model, batch_size, dims, device, path, num_workers=1):
     m , s = 0, 0
-    if path.endswith('.npz'):
-        with np.load(path) as f:
-            m, s = f['mu'][:], f['sigma'][:]
-    else:
-            m, s = calculate_activation_statistics(dataset, model, batch_size, dims, device, num_workers)
+    try:
+        f = np.load(os.path.join(path, 'ms.npz'))
+        m, s = f['mu'][:], f['sigma'][:]
+        f.close()
+    except:
+        m, s = calculate_activation_statistics(dataset, model, batch_size, dims, device, num_workers)
+
     return m , s
 
 
@@ -226,10 +228,10 @@ def calculate_fid_given_datasets(datasets, batch_size, device, dims, paths, num_
     model = InceptionV3([block_idx]).to(device)
 
     m1, s1 = compute_statistics_of_dataset(datasets[0], model, batch_size, dims, device, paths[0], num_workers)
-    np.savez_compressed(paths[0], mu=m1, sigma=s1)
+    np.savez_compressed(os.path.join(paths[0], 'ms.npz'), mu=m1, sigma=s1)
 
     m2, s2 = compute_statistics_of_dataset(datasets[1], model, batch_size, dims, device, paths[1], num_workers)
-    np.savez_compressed(paths[1], mu=m2, sigma=s2)
+    np.savez_compressed(os.path.join(paths[1], 'ms.npz'), mu=m2, sigma=s2)
 
     fid_value = calculate_frechet_distance(m1, s1, m2, s2)
 
@@ -264,9 +266,12 @@ def main():
     datasets = get_datasets(normal_dataset=args.source_dataset, normal_class_indx=args.source_class, exposure_dataset=args.exposure_dataset)
 
     paths = [
-        os.path.join('./MU-STD/',  f'normal-{args.source_dataset}', f'normal-class-{args.source_class:02d}-{dataset_labels[args.source_dataset][args.source_class]}', f'ms.npz'),
-        os.path.join('./MU-STD/',  f'exposure-{args.exposure_dataset}', 'all' if args.source_dataset==args.exposure_dataset else f'except-{args.source_class:02d}-{dataset_labels[args.source_dataset][args.source_class]}', f'ms.npz'),   
+        os.path.join('./MU-STD/',  f'normal-{args.source_dataset}', f'normal-class-{args.source_class:02d}-{dataset_labels[args.source_dataset][args.source_class]}'),
+        os.path.join('./MU-STD/',  f'exposure-{args.exposure_dataset}', 'all' if args.source_dataset==args.exposure_dataset else f'except-{args.source_class:02d}-{dataset_labels[args.source_dataset][args.source_class]}') 
     ]
+
+    for path in paths:
+        os.makedirs(path, exist_ok=True)
 
     fid_value = calculate_fid_given_datasets(datasets,
                                             args.batch_size,
