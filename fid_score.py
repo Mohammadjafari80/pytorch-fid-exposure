@@ -51,7 +51,7 @@ from constants import dataset_labels
 from logger import Logger
 
 parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
-parser.add_argument('--batch-size', type=int, default=50,
+parser.add_argument('--batch-size', type=int, default=128,
                     help='Batch size to use')
 parser.add_argument('--num-workers', type=int,
                     help=('Number of processes to use for data loading. '
@@ -267,7 +267,7 @@ def main():
 
     paths = [
         os.path.join('./MU-STD/',  f'normal-{args.source_dataset}', f'normal-class-{args.source_class:02d}-{dataset_labels[args.source_dataset][args.source_class]}'),
-        os.path.join('./MU-STD/',  f'exposure-{args.exposure_dataset}', 'all' if args.source_dataset==args.exposure_dataset else f'except-{args.source_class:02d}-{dataset_labels[args.source_dataset][args.source_class]}') 
+        os.path.join('./MU-STD/',  f'exposure-{args.exposure_dataset}', 'all' if args.source_dataset!=args.exposure_dataset else f'except-{args.source_class:02d}-{dataset_labels[args.source_dataset][args.source_class]}') 
     ]
 
     for path in paths:
