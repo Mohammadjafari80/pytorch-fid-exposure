@@ -47,6 +47,8 @@ except ImportError:
         return x
 
 from inception import InceptionV3
+from constants import dataset_labels
+from logger import Logger
 
 parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
 parser.add_argument('--batch-size', type=int, default=50,
@@ -230,6 +232,10 @@ def calculate_fid_given_datasets(datasets, batch_size, device, dims, num_workers
 def main():
     args = parser.parse_args()
 
+    logger_dir = os.path.join('./Scores/',  f'normal-{args.source_dataset}', f'normal-class-{args.source_class:02d}-{dataset_labels[args.source_dataset][args.source_class]}', f'exposure-{args.exposure_dataset}')
+    experiment_name = f'FID-{args.source_dataset}-{args.source_class:02d}-{dataset_labels[args.source_dataset][args.source_class]}-{args.exposure_dataset}'
+    logger = Logger(save_dir=logger_dir, exp_name=experiment_name, hparams=args)
+    
     if args.device is None:
         device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
     else:
@@ -255,8 +261,9 @@ def main():
                                             device,
                                             args.dims,
                                             num_workers)
-    print('FID: ', fid_value)
-
+    
+    
+    logger.add_log(f'FID: {fid_value}')
 
 if __name__ == '__main__':
     main()
