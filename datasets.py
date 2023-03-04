@@ -34,7 +34,7 @@ def get_datasets(normal_dataset:str, normal_class_indx:int, exposure_dataset:str
     exposure_data = get_exposure(dataset=exposure_dataset, normal_dataset=normal_dataset, normal_class_indx=normal_class_indx)
 
     normal_data = GeneralDataset(data=normal_data, transform=transform)
-    exposure_data = GeneralDataset(data=normal_data, transform=transform)
+    exposure_data = GeneralDataset(data=exposure_data, transform=transform)
 
     return normal_data, exposure_data
     
