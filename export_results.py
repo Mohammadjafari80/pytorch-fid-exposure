@@ -5,7 +5,7 @@ import os
 import csv
 
 dataset_names = ['mnist', 'fashion', 'cifar10', 'cifar100', 'svhn']
-exposure_datasets = ['mnist', 'fashion', 'cifar10', 'cifar100', 'svhn']
+exposure_datasets = ['mnist', 'fashion', 'cifar10', 'cifar100', 'svhn', 'adaptive']
 
 for dataset_name in dataset_names:
     num_classes = len(dataset_labels[dataset_name])
