@@ -4,8 +4,8 @@ from constants import dataset_labels
 import os
 import csv
 
-dataset_names = ['mnist', 'fashion', 'cifar10', 'cifar100']
-exposure_datasets = ['mnist', 'fashion', 'cifar10', 'cifar100', 'svhn', 'adaptive']
+dataset_names = ['mnist', 'fashion', 'cifar10', 'cifar100', 'svhn']
+exposure_datasets = ['mnist', 'fashion', 'cifar10', 'cifar100', 'svhn']
 
 for dataset_name in dataset_names:
     num_classes = len(dataset_labels[dataset_name])
@@ -21,14 +21,12 @@ for dataset_name in dataset_names:
 
             with open(results_file, 'r') as f:
                 for line in f:
-                    print(line)
                     if 'FID' in line:
                         fid_value = float(line.split(': ')[-1].strip())
                         if normal_class not in fid_results:
                             fid_results[normal_class] = {}
                         fid_results[normal_class][exposure_dataset] = fid_value
 
-    # Write the fid_results to a CSV file
     # Write the fid_results to a CSV file
     results_dir = './Results/'
     if not os.path.exists(results_dir):
